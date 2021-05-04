@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>cowplot on Sevim Cengiz</title><link>https://sevimcengiz.github.io/tags/cowplot/</link><description>Recent content in cowplot on Sevim Cengiz</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 04 Jun 2015 00:00:00 +0000</lastBuildDate><atom:link href="https://sevimcengiz.github.io/tags/cowplot/index.xml" rel="self" type="application/rss+xml"/><item><title>cowplot R package now available on CRAN</title><link>https://sevimcengiz.github.io/blog/2015/06/04/cowplot-r-package-now-available-on-cran/</link><pubDate>Thu, 04 Jun 2015 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2015/06/04/cowplot-r-package-now-available-on-cran/</guid><description>
+&lt;script src="https://sevimcengiz.github.io/rmarkdown-libs/header-attrs/header-attrs.js">&lt;/script>
+&lt;p>This week, I finally took the time to clean up the code for my cowplot R package and &lt;a href="http://cran.r-project.org/web/packages/cowplot/index.html">submit it to CRAN.&lt;/a> While the code had been up on &lt;a href="https://github.com/wilkelab/cowplot">github for a while,&lt;/a> and I had &lt;a href="https://sevimcengiz.github.io/blog/2014/10/7/to-grid-or-not-to-grid">blogged about it previously,&lt;/a> nobody had really taken notice as far as I can tell. However, this time, with an official release and better documentation, people seem to like it a lot. The response on Twitter was overwhelming.&lt;/p>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+&lt;a href="https://twitter.com/ClausWilke">&lt;span class="citation">@ClausWilke&lt;/span>&lt;/a> Thank you! Thank you!
+&lt;/p>
+— Shaun Jackman (&lt;span class="citation">@sjackman&lt;/span>) &lt;a href="https://twitter.com/sjackman/status/606215710549774336">June 3, 2015&lt;/a>
+&lt;/blockquote>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+&lt;a href="https://twitter.com/ClausWilke">&lt;span class="citation">@ClausWilke&lt;/span>&lt;/a> &lt;a href="https://twitter.com/hadleywickham">&lt;span class="citation">@hadleywickham&lt;/span>&lt;/a> thank you, and goodbye illustrator, Photoshop, imagemagick, etc.
+&lt;/p>
+— Stephen Turner (&lt;span class="citation">@genetics_blog&lt;/span>) &lt;a href="https://twitter.com/genetics_blog/status/606221366736654337">June 3, 2015&lt;/a>
+&lt;/blockquote>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+&lt;a href="https://twitter.com/ClausWilke">&lt;span class="citation">@ClausWilke&lt;/span>&lt;/a> &lt;a href="https://twitter.com/hadleywickham">&lt;span class="citation">@hadleywickham&lt;/span>&lt;/a> awesome !!! This makes making figures so easy !!
+&lt;/p>
+— sahil seth (&lt;span class="citation">@sethsa&lt;/span>) &lt;a href="https://twitter.com/sethsa/status/606282681907691520">June 4, 2015&lt;/a>
+&lt;/blockquote>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+I love that the name cowplot is based on &lt;a href="https://twitter.com/ClausWilke">&lt;span class="citation">@ClausWilke&lt;/span>&lt;/a>'s initials. New goal: create a package named madplot some day. :)
+&lt;/p>
+— Meghan Duffy (&lt;span class="citation">@duffy_ma&lt;/span>) &lt;a href="https://twitter.com/duffy_ma/status/606450829604880386">June 4, 2015&lt;/a>
+&lt;/blockquote>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+New R pkg makes it easy to custom arrange, label ggplots on a canvas &lt;a href="http://t.co/EQGjq9rOAE">http://t.co/EQGjq9rOAE&lt;/a> By &lt;a href="https://twitter.com/ClausWilke">&lt;span class="citation">@ClausWilke&lt;/span>&lt;/a> &lt;a href="https://twitter.com/hashtag/rstats?src=hash">#rstats&lt;/a> &lt;a href="http://t.co/Wi2kL3RnIw">pic.twitter.com/Wi2kL3RnIw&lt;/a>
+&lt;/p>
+— Sharon Machlis (&lt;span class="citation">@sharon000&lt;/span>) &lt;a href="https://twitter.com/sharon000/status/606476793558614016">June 4, 2015&lt;/a>
+&lt;/blockquote>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+This looks awesome… I've been struggling with this issue a lot the last week or so. &lt;a href="https://t.co/8YxNdocqMd">https://t.co/8YxNdocqMd&lt;/a>
+&lt;/p>
+— Andrew Kniss (&lt;span class="citation">@WyoWeeds&lt;/span>) &lt;a href="https://twitter.com/WyoWeeds/status/606482691433766914">June 4, 2015&lt;/a>
+&lt;/blockquote>
+&lt;blockquote class="twitter-tweet" lang="en">
+&lt;p lang="en" dir="ltr">
+(A big thank you to &lt;a href="https://twitter.com/ClausWilke">&lt;span class="citation">@ClausWilke&lt;/span>&lt;/a> for developing the cowplot package so I could make this 2-panel figure.) &lt;a href="https://twitter.com/hashtag/Rstats?src=hash">#Rstats&lt;/a> &lt;a href="https://twitter.com/hashtag/ggplot?src=hash">#ggplot&lt;/a>
+&lt;/p>
+— Andrew Kniss (&lt;span class="citation">@WyoWeeds&lt;/span>) &lt;a href="https://twitter.com/WyoWeeds/status/606572020004839424">June 4, 2015&lt;/a>
+&lt;/blockquote>
+&lt;script async src="//platform.twitter.com/widgets.js" charset="utf-8">&lt;/script></description></item></channel></rss>

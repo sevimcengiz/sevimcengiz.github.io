@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>tidyverse on Sevim Cengiz</title><link>https://sevimcengiz.github.io/tags/tidyverse/</link><description>Recent content in tidyverse on Sevim Cengiz</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 07 Sep 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://sevimcengiz.github.io/tags/tidyverse/index.xml" rel="self" type="application/rss+xml"/><item><title>PCA tidyverse style</title><link>https://sevimcengiz.github.io/blog/2020/09/07/pca-tidyverse-style/</link><pubDate>Mon, 07 Sep 2020 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2020/09/07/pca-tidyverse-style/</guid><description>
+&lt;script src="https://sevimcengiz.github.io/rmarkdown-libs/header-attrs/header-attrs.js">&lt;/script>
+&lt;p>Doing a PCA in R is easy: Just run the function &lt;code>prcomp()&lt;/code> on your matrix of scaled numeric predictor variables. There’s just one problem, however. The result is an object of class &lt;code>prcomp&lt;/code> that doesn’t fit nicely into the tidyverse framework, e.g. for visualization. While it’s reasonably easy to extract the relevant info with &lt;a href="https://wilkelab.org/classes/SDS348/2020_spring/worksheets/class9_solutions.html">some base-R manipulations,&lt;/a> I’ve never been happy with this approach. But now, I’ve realized that all the necessary functions to do this tidyverse-style are available in the broom package.&lt;/p>
+&lt;p>For our PCA example, we’ll need the packages tidyverse and broom. Note that as of this writing, we need the current development version of broom &lt;a href="https://github.com/tidymodels/broom/issues/923">because of a bug&lt;/a> in &lt;code>tidy.prcomp()&lt;/code>. We’ll also use the cowplot package for plot themes.&lt;/p>
+&lt;pre class="r">&lt;code>library(tidyverse)&lt;/code>&lt;/pre>
+&lt;pre>&lt;code># ── Attaching packages ────────────────────────────────── tidyverse 1.3.0 ──&lt;/code>&lt;/pre>
+&lt;pre>&lt;code># ✓ ggplot2 3.3.2 ✓ purrr 0.3.4
+# ✓ tibble 3.0.3 ✓ dplyr 1.0.2
+# ✓ tidyr 1.1.2 ✓ stringr 1.4.0
+# ✓ readr 1.3.1 ✓ forcats 0.5.0&lt;/code>&lt;/pre>
+&lt;pre>&lt;code># ── Conflicts ───────────────────────────────────── tidyverse_conflicts() ──
+# x dplyr::filter() masks stats::filter()
+# x dplyr::lag() masks stats::lag()&lt;/code>&lt;/pre>
+&lt;pre class="r">&lt;code>library(broom) # devtools::install_github(&amp;quot;tidymodels/broom&amp;quot;)
+library(cowplot)&lt;/code>&lt;/pre>
+&lt;p>We’ll be analyzing the &lt;code>biopsy&lt;/code> dataset, which comes originally from the MASS package. It is a breast cancer dataset from the University of Wisconsin Hospitals, Madison from Dr. William H. Wolberg. He assessed biopsies of breast tumors for 699 patients; each of nine attributes was scored on a scale of 1 to 10. The true outcome (benign/malignant) is also known.&lt;/p>
+&lt;pre class="r">&lt;code>biopsy &amp;lt;- read_csv(&amp;quot;https://wilkelab.org/classes/SDS348/data_sets/biopsy.csv&amp;quot;)&lt;/code>&lt;/pre>
+&lt;pre>&lt;code># Parsed with column specification:
+# cols(
+# clump_thickness = col_double(),
+# uniform_cell_size = col_double(),
+# uniform_cell_shape = col_double(),
+# marg_adhesion = col_double(),
+# epithelial_cell_size = col_double(),
+# bare_nuclei = col_double(),
+# bland_chromatin = col_double(),
+# normal_nucleoli = col_double(),
+# mitoses = col_double(),
+# outcome = col_character()
+# )&lt;/code>&lt;/pre>
+&lt;p>In general, when performing PCA, we’ll want to do (at least) three things:&lt;/p>
+&lt;ol style="list-style-type: decimal">
+&lt;li>Look at the data in PC coordinates.&lt;/li>
+&lt;li>Look at the rotation matrix.&lt;/li>
+&lt;li>Look at the variance explained by each PC.&lt;/li>
+&lt;/ol>
+&lt;p>Let’s do these three things in turn.&lt;/p>
+&lt;div id="look-at-the-data-in-pc-coordinates" class="section level2">
+&lt;h2>Look at the data in PC coordinates&lt;/h2>
+&lt;p>We start by running the PCA and storing the result in a variable &lt;code>pca_fit&lt;/code>. There are two issues to consider here. First, the &lt;code>prcomp()&lt;/code> function can only deal with numeric columns, so we need to remove all non-numeric columns from the data. This is straightforward using the &lt;code>where(is.numeric)&lt;/code> tidyselect construct. Second, we normally want to scale the data values to unit variance before PCA. We do so by using the argument &lt;code>scale = TRUE&lt;/code> in &lt;code>prcomp()&lt;/code>.&lt;/p>
+&lt;pre class="r">&lt;code>pca_fit &amp;lt;- biopsy %&amp;gt;%
+select(where(is.numeric)) %&amp;gt;% # retain only numeric columns
+prcomp(scale = TRUE) # do PCA on scaled data&lt;/code>&lt;/pre>
+&lt;p>As an alternative to &lt;code>scale = TRUE&lt;/code>, we could also have scaled the data by explicitly invoking the &lt;code>scale()&lt;/code> function.&lt;/p>
+&lt;pre class="r">&lt;code>pca_fit &amp;lt;- biopsy %&amp;gt;%
+select(where(is.numeric)) %&amp;gt;% # retain only numeric columns
+scale() %&amp;gt;% # scale data
+prcomp() # do PCA&lt;/code>&lt;/pre>
+&lt;p>Now, we want to plot the data in PC coordinates. In general, this means combining the PC coordinates with the original dataset, so we can color points by categorical variables present in the original data but removed for the PCA. We do this with the &lt;code>augment()&lt;/code> function from broom, which takes as arguments the fitted model and the original data. The columns containing the fitted coordinates are called &lt;code>.fittedPC1&lt;/code>, &lt;code>.fittedPC2&lt;/code>, etc.&lt;/p>
+&lt;pre class="r">&lt;code>pca_fit %&amp;gt;%
+augment(biopsy) %&amp;gt;% # add original dataset back in
+ggplot(aes(.fittedPC1, .fittedPC2, color = outcome)) +
+geom_point(size = 1.5) +
+scale_color_manual(
+values = c(malignant = &amp;quot;#D55E00&amp;quot;, benign = &amp;quot;#0072B2&amp;quot;)
+) +
+theme_half_open(12) + background_grid()&lt;/code>&lt;/pre>
+&lt;p>&lt;img src="figure-html/pc-scatter-plot-1.png" />&lt;!-- -->&lt;/p>
+&lt;/div>
+&lt;div id="look-at-the-data-in-pc-coordinates-1" class="section level2">
+&lt;h2>Look at the data in PC coordinates&lt;/h2>
+&lt;p>Next, we plot the rotation matrix. The rotation matrix is stored as &lt;code>pca_fit$rotation&lt;/code>, but here we’ll extract it using the &lt;code>tidy()&lt;/code> function from broom. When applied to &lt;code>prcomp&lt;/code> objects, the &lt;code>tidy()&lt;/code> function takes an additional argument &lt;code>matrix&lt;/code>, which we set to &lt;code>matrix = "rotation"&lt;/code> to extract the rotation matrix.&lt;/p>
+&lt;pre class="r">&lt;code># extract rotation matrix
+pca_fit %&amp;gt;%
+tidy(matrix = &amp;quot;rotation&amp;quot;)&lt;/code>&lt;/pre>
+&lt;pre>&lt;code># # A tibble: 81 x 3
+# column PC value
+# &amp;lt;chr&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+# 1 clump_thickness 1 -0.302
+# 2 clump_thickness 2 -0.141
+# 3 clump_thickness 3 0.866
+# 4 clump_thickness 4 -0.108
+# 5 clump_thickness 5 0.0803
+# 6 clump_thickness 6 -0.243
+# 7 clump_thickness 7 -0.00852
+# 8 clump_thickness 8 0.248
+# 9 clump_thickness 9 -0.00275
+# 10 uniform_cell_size 1 -0.381
+# # … with 71 more rows&lt;/code>&lt;/pre>
+&lt;p>Now in the context of a plot:&lt;/p>
+&lt;pre class="r">&lt;code># define arrow style for plotting
+arrow_style &amp;lt;- arrow(
+angle = 20, ends = &amp;quot;first&amp;quot;, type = &amp;quot;closed&amp;quot;, length = grid::unit(8, &amp;quot;pt&amp;quot;)
+)
+# plot rotation matrix
+pca_fit %&amp;gt;%
+tidy(matrix = &amp;quot;rotation&amp;quot;) %&amp;gt;%
+pivot_wider(names_from = &amp;quot;PC&amp;quot;, names_prefix = &amp;quot;PC&amp;quot;, values_from = &amp;quot;value&amp;quot;) %&amp;gt;%
+ggplot(aes(PC1, PC2)) +
+geom_segment(xend = 0, yend = 0, arrow = arrow_style) +
+geom_text(
+aes(label = column),
+hjust = 1, nudge_x = -0.02,
+color = &amp;quot;#904C2F&amp;quot;
+) +
+xlim(-1.25, .5) + ylim(-.5, 1) +
+coord_fixed() + # fix aspect ratio to 1:1
+theme_minimal_grid(12)&lt;/code>&lt;/pre>
+&lt;p>&lt;img src="figure-html/pc-rotation-plot-1.png" />&lt;!-- -->&lt;/p>
+&lt;/div>
+&lt;div id="look-at-the-variance-explained-by-each-pc" class="section level2">
+&lt;h2>Look at the variance explained by each PC&lt;/h2>
+&lt;p>Finally, we’ll plot the variance explained by each PC. We can again extract this information using the &lt;code>tidy()&lt;/code> function from broom, now by setting the &lt;code>matrix&lt;/code> argument to &lt;code>matrix = "eigenvalues"&lt;/code>.&lt;/p>
+&lt;pre class="r">&lt;code>pca_fit %&amp;gt;%
+tidy(matrix = &amp;quot;eigenvalues&amp;quot;)&lt;/code>&lt;/pre>
+&lt;pre>&lt;code># # A tibble: 9 x 4
+# PC std.dev percent cumulative
+# &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+# 1 1 2.43 0.656 0.656
+# 2 2 0.881 0.0862 0.742
+# 3 3 0.734 0.0599 0.802
+# 4 4 0.678 0.0511 0.853
+# 5 5 0.617 0.0422 0.895
+# 6 6 0.549 0.0335 0.928
+# 7 7 0.543 0.0327 0.961
+# 8 8 0.511 0.0290 0.990
+# 9 9 0.297 0.00982 1&lt;/code>&lt;/pre>
+&lt;p>Now in the context of a plot.&lt;/p>
+&lt;pre class="r">&lt;code>pca_fit %&amp;gt;%
+tidy(matrix = &amp;quot;eigenvalues&amp;quot;) %&amp;gt;%
+ggplot(aes(PC, percent)) +
+geom_col(fill = &amp;quot;#56B4E9&amp;quot;, alpha = 0.8) +
+scale_x_continuous(breaks = 1:9) +
+scale_y_continuous(
+labels = scales::percent_format(),
+expand = expansion(mult = c(0, 0.01))
+) +
+theme_minimal_hgrid(12)&lt;/code>&lt;/pre>
+&lt;p>&lt;img src="figure-html/pc-eigenvalues-1.png" />&lt;!-- -->&lt;/p>
+&lt;p>The first component captures 65% of the variation in the data and, as we can see from the first plot in this post, nicely separates the benign samples from the malignant samples.&lt;/p>
+&lt;/div></description></item><item><title>Reading and combining many tidy data files in R</title><link>https://sevimcengiz.github.io/blog/2016/06/13/reading-and-combining-many-tidy-data-files-in-r/</link><pubDate>Mon, 13 Jun 2016 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2016/06/13/reading-and-combining-many-tidy-data-files-in-r/</guid><description>
+&lt;script src="https://sevimcengiz.github.io/rmarkdown-libs/header-attrs/header-attrs.js">&lt;/script>
+&lt;p>&lt;strong>Update June 16, 2019:&lt;/strong> &lt;em>This post is now three years old, and some of the advice given is now outdated. Most importantly, it is much better to use &lt;code>map_dfr()&lt;/code> than &lt;code>map(...) %&amp;gt;% reduce(rbind)&lt;/code>.&lt;/em>&lt;/p>
+&lt;p>Everybody who is familiar with the R libraries for processing of tidy data, such as &lt;code>dplyr&lt;/code> and &lt;code>ggplot&lt;/code>, knows how powerful they are and how much one can get done with just a few lines of R code. However, similarly, everybody who has used them has probably spent more time bringing data into the appropriate tidy format than writing analysis and/or plotting code. In particular, one scenario that arises all the time is that even if data files are in tidy format, the entire dataset may be spread out over many individual files, and loading them all in and combining them into one large table can be cumbersome. Here, I want to demonstrate some neat tricks, using the relatively new package &lt;code>purrr&lt;/code> and some recent additions to the package &lt;code>tidyr&lt;/code>, that make loading and combining many data files a piece of cake.&lt;/p>
+&lt;p>The code shown here depends on the following R packages:&lt;/p>
+&lt;pre class="r">&lt;code>require(readr) # for read_csv()
+require(dplyr) # for mutate()
+require(tidyr) # for unnest()
+require(purrr) # for map(), reduce()&lt;/code>&lt;/pre>
+&lt;div id="reading-in-all-files-matching-a-given-name" class="section level2">
+&lt;h2>Reading in all files matching a given name&lt;/h2>
+&lt;p>As an example, we will consider a scenario where we have population census data for various cities, stored in individual csv files for each city. The data I’m using here comes from &lt;a href="http://factfinder.census.gov/" class="uri">http://factfinder.census.gov/&lt;/a>.&lt;/p>
+&lt;p>The first scenario we will consider is one where we want to read all csv files in the current working directory. To achieve this goal, we first list all &lt;code>*.csv&lt;/code> files, using the function &lt;code>dir()&lt;/code>. We find that there are three, for the cities Houston, Los Angeles, and New York:&lt;/p>
+&lt;pre class="r">&lt;code># find all file names ending in .csv
+files &amp;lt;- dir(pattern = &amp;quot;*.csv&amp;quot;)
+files&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## [1] &amp;quot;Houston_TX.csv&amp;quot; &amp;quot;Los Angeles_CA.csv&amp;quot; &amp;quot;New York_NY.csv&amp;quot;&lt;/code>&lt;/pre>
+&lt;p>We can then read in those files and combine them into one data frame using the &lt;code>purrr&lt;/code> functions &lt;code>map()&lt;/code> and &lt;code>reduce()&lt;/code>:&lt;/p>
+&lt;pre class="r">&lt;code>data &amp;lt;- files %&amp;gt;%
+map(read_csv) %&amp;gt;% # read in all the files individually, using
+# the function read_csv() from the readr package
+reduce(rbind) # reduce with rbind into one dataframe
+data&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [15 x 3]
+##
+## location year population
+## (chr) (int) (int)
+## 1 Houston, TX 2011 2142221
+## 2 Houston, TX 2012 2177376
+## 3 Houston, TX 2013 2216460
+## 4 Houston, TX 2014 2256192
+## 5 Houston, TX 2015 2296224
+## 6 Los Angeles, CA 2011 3828604
+## 7 Los Angeles, CA 2012 3864724
+## 8 Los Angeles, CA 2013 3902005
+## 9 Los Angeles, CA 2014 3936940
+## 10 Los Angeles, CA 2015 3971883
+## 11 New York, NY 2011 8287000
+## 12 New York, NY 2012 8365069
+## 13 New York, NY 2013 8436047
+## 14 New York, NY 2014 8495194
+## 15 New York, NY 2015 8550405&lt;/code>&lt;/pre>
+&lt;p>Often, we want to read the data from a given directory rather than from the current working directory. The ability to define functions on-the-fly in &lt;code>purrr&lt;/code> makes this easy:&lt;/p>
+&lt;pre class="r">&lt;code>data_path &amp;lt;- &amp;quot;city_data&amp;quot; # path to the data
+files &amp;lt;- dir(data_path, pattern = &amp;quot;*.csv&amp;quot;) # get file names
+data &amp;lt;- files %&amp;gt;%
+# read in all the files, appending the path before the filename
+map(~ read_csv(file.path(data_path, .))) %&amp;gt;%
+reduce(rbind)
+data&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [15 x 3]
+##
+## location year population
+## (chr) (int) (int)
+## 1 Houston, TX 2011 2142221
+## 2 Houston, TX 2012 2177376
+## 3 Houston, TX 2013 2216460
+## 4 Houston, TX 2014 2256192
+## 5 Houston, TX 2015 2296224
+## 6 Los Angeles, CA 2011 3828604
+## 7 Los Angeles, CA 2012 3864724
+## 8 Los Angeles, CA 2013 3902005
+## 9 Los Angeles, CA 2014 3936940
+## 10 Los Angeles, CA 2015 3971883
+## 11 New York, NY 2011 8287000
+## 12 New York, NY 2012 8365069
+## 13 New York, NY 2013 8436047
+## 14 New York, NY 2014 8495194
+## 15 New York, NY 2015 8550405&lt;/code>&lt;/pre>
+&lt;p>Here, the expression &lt;code>~ read_csv(file.path(data_path, .))&lt;/code> is a shortcut for the anonymous function definition &lt;code>function(x) read_csv(file.path(data_path, x))&lt;/code>:&lt;/p>
+&lt;pre class="r">&lt;code># this code does the exact same thing as the previous code
+data &amp;lt;- files %&amp;gt;%
+map(function(x) read_csv(file.path(data_path, x))) %&amp;gt;%
+reduce(rbind)
+data&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [15 x 3]
+##
+## location year population
+## (chr) (int) (int)
+## 1 Houston, TX 2011 2142221
+## 2 Houston, TX 2012 2177376
+## 3 Houston, TX 2013 2216460
+## 4 Houston, TX 2014 2256192
+## 5 Houston, TX 2015 2296224
+## 6 Los Angeles, CA 2011 3828604
+## 7 Los Angeles, CA 2012 3864724
+## 8 Los Angeles, CA 2013 3902005
+## 9 Los Angeles, CA 2014 3936940
+## 10 Los Angeles, CA 2015 3971883
+## 11 New York, NY 2011 8287000
+## 12 New York, NY 2012 8365069
+## 13 New York, NY 2013 8436047
+## 14 New York, NY 2014 8495194
+## 15 New York, NY 2015 8550405&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;div id="keeping-auxilliary-information-about-the-files-read" class="section level2">
+&lt;h2>Keeping auxilliary information about the files read&lt;/h2>
+&lt;p>One limitation of the previous approach is that we don’t keep any auxilliary information we may want to, such as the filenames of the files read. To keep the filename alongside the data, we can read the data into a nested dataframe rather than a list, using the &lt;code>mutate()&lt;/code> function from &lt;code>dplyr&lt;/code>. This gives us the following result:&lt;/p>
+&lt;pre class="r">&lt;code>data &amp;lt;- data_frame(filename = files) %&amp;gt;% # create a data frame
+# holding the file names
+mutate(file_contents = map(filename, # read files into
+~ read_csv(file.path(data_path, .))) # a new data column
+)
+data&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [3 x 2]
+##
+## filename file_contents
+## (chr) (chr)
+## 1 Houston_TX.csv &amp;lt;tbl_df [5,3]&amp;gt;
+## 2 Los Angeles_CA.csv &amp;lt;tbl_df [5,3]&amp;gt;
+## 3 New York_NY.csv &amp;lt;tbl_df [5,3]&amp;gt;&lt;/code>&lt;/pre>
+&lt;p>To turn this data frame into one useful for downstream analysis, we use the function &lt;code>unnest()&lt;/code> from &lt;code>tidyr&lt;/code>:&lt;/p>
+&lt;pre class="r">&lt;code>unnest(data)&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [15 x 4]
+##
+## filename location year population
+## (chr) (chr) (int) (int)
+## 1 Houston_TX.csv Houston, TX 2011 2142221
+## 2 Houston_TX.csv Houston, TX 2012 2177376
+## 3 Houston_TX.csv Houston, TX 2013 2216460
+## 4 Houston_TX.csv Houston, TX 2014 2256192
+## 5 Houston_TX.csv Houston, TX 2015 2296224
+## 6 Los Angeles_CA.csv Los Angeles, CA 2011 3828604
+## 7 Los Angeles_CA.csv Los Angeles, CA 2012 3864724
+## 8 Los Angeles_CA.csv Los Angeles, CA 2013 3902005
+## 9 Los Angeles_CA.csv Los Angeles, CA 2014 3936940
+## 10 Los Angeles_CA.csv Los Angeles, CA 2015 3971883
+## 11 New York_NY.csv New York, NY 2011 8287000
+## 12 New York_NY.csv New York, NY 2012 8365069
+## 13 New York_NY.csv New York, NY 2013 8436047
+## 14 New York_NY.csv New York, NY 2014 8495194
+## 15 New York_NY.csv New York, NY 2015 8550405&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;div id="creating-filenames-from-data" class="section level2">
+&lt;h2>Creating filenames from data&lt;/h2>
+&lt;p>In the previous examples, we have read in all the data files in a given directory. Often, however, we would rather read in specific files based on other data we have. For example, let’s assume we have the following data table:&lt;/p>
+&lt;pre class="r">&lt;code>cities &amp;lt;- data_frame(city = c(&amp;quot;New York&amp;quot;, &amp;quot;Houston&amp;quot;),
+state = c(&amp;quot;NY&amp;quot;, &amp;quot;TX&amp;quot;),
+area = c(305, 599.6))
+cities&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [2 x 3]
+##
+## city state area
+## (chr) (chr) (dbl)
+## 1 New York NY 305.0
+## 2 Houston TX 599.6&lt;/code>&lt;/pre>
+&lt;p>We want to use the city and state columns to create appropriate filenames and then load in the corresponding files. The code in its entirety looks as follows:&lt;/p>
+&lt;pre class="r">&lt;code>data &amp;lt;- cities %&amp;gt;% # start with the cities table
+# create filenames
+mutate(filename = paste(city, &amp;quot;_&amp;quot;, state, &amp;quot;.csv&amp;quot;, sep=&amp;quot;&amp;quot;)) %&amp;gt;%
+# read in data
+mutate(file_contents = map(filename,
+~ read_csv(file.path(data_path, .)))
+) %&amp;gt;%
+select(-filename) %&amp;gt;% # remove filenames, not needed anynmore
+unnest() %&amp;gt;% # unnest
+select(-location) # remove location column, not needed
+# since we have city and state columns
+data&lt;/code>&lt;/pre>
+&lt;pre>&lt;code>## Source: local data frame [10 x 5]
+##
+## city state area year population
+## (chr) (chr) (dbl) (int) (int)
+## 1 New York NY 305.0 2011 8287000
+## 2 New York NY 305.0 2012 8365069
+## 3 New York NY 305.0 2013 8436047
+## 4 New York NY 305.0 2014 8495194
+## 5 New York NY 305.0 2015 8550405
+## 6 Houston TX 599.6 2011 2142221
+## 7 Houston TX 599.6 2012 2177376
+## 8 Houston TX 599.6 2013 2216460
+## 9 Houston TX 599.6 2014 2256192
+## 10 Houston TX 599.6 2015 2296224&lt;/code>&lt;/pre>
+&lt;p>I hope you have found these examples useful, and you will start loading files into nested data frames.&lt;/p>
+&lt;/div></description></item></channel></rss>

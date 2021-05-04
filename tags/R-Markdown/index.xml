@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>R Markdown on Sevim Cengiz</title><link>https://sevimcengiz.github.io/tags/R-Markdown/</link><description>Recent content in R Markdown on Sevim Cengiz</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 08 Sep 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://sevimcengiz.github.io/tags/R-Markdown/index.xml" rel="self" type="application/rss+xml"/><item><title>Writing a blogdown post for the ages</title><link>https://sevimcengiz.github.io/blog/2020/09/08/a-blogdown-post-for-the-ages/</link><pubDate>Tue, 08 Sep 2020 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2020/09/08/a-blogdown-post-for-the-ages/</guid><description>
+&lt;script src="https://sevimcengiz.github.io/rmarkdown-libs/header-attrs/header-attrs.js">&lt;/script>
+&lt;p>The R package &lt;a href="https://bookdown.org/yihui/blogdown/">blogdown&lt;/a> has become a widely popular solution to setting up personal blogs. It makes it super easy to set up quite elaborate websites, and to write posts that contain R code, generated output and figures, footnotes, figure references, and math.&lt;a href="#fn1" class="footnote-ref" id="fnref1">&lt;sup>1&lt;/sup>&lt;/a> However, one problem with blogdown is that it likes to re-knit &lt;code>.Rmd&lt;/code> files.&lt;a href="#fn2" class="footnote-ref" id="fnref2">&lt;sup>2&lt;/sup>&lt;/a> This may be fine if you’re just starting out with your site or if your posts generally don’t contain any sophisticated R code, but in a long-standing blog you’ll eventually run into trouble. First, re-knitting hundreds of posts may be quite slow. And second, if you’ve got a bunch of old posts chances are some will not knit anymore, and then you may have got a serious problem with no simple solution.&lt;/p>
+&lt;p>This problem has been recognized for a while, and the proposed solution is usually to knit only on demand. See e.g. &lt;a href="https://yutani.rbind.io/post/2017-10-25-blogdown-custom/">here&lt;/a>. The experimental &lt;a href="https://github.com/r-lib/hugodown">hugodown package&lt;/a> likewise aims to limit any unnecessary re-knitting. Here, I’m taking a different approach. My perspective is that I want to be able to re-knit any time without worrying that I’ll destroy anything of value, and I also want to be able to add code and output to posts containing prior code that doesn’t run anymore today.&lt;/p>
+&lt;p>My approach is to copy the knitted markdown code and output back into the &lt;code>.Rmd&lt;/code> file. This requires some amount of manual work, but it’s not that bad, and I value the benefits I get from this approach. Maybe at some point somebody will write a package that can automate this process.&lt;/p>
+&lt;p>I do not necessarily recommend the approach I’m taking here. This post is mostly for my own purposes, so I can retrace my steps in the future. If you want to see the source code resulting from this process, you can check out the &lt;a href="https://github.com/clauswilke/clauswilke.github.io/blob/master/content/blog/2020-09-08-a-blogdown-post-for-the-ages/index.Rmd">source for this post&lt;/a> on github.&lt;/p>
+&lt;p>To provide an example scenario, I include here one chunk of R code that generates a figure. This code has various features that will likely generate issues in the future or in a blog with many posts:&lt;/p>
+&lt;ul>
+&lt;li>It depends on a bunch of packages, including one only available from github.&lt;/li>
+&lt;li>It uses various fonts that need to be installed locally.&lt;/li>
+&lt;li>It is slow to render.&lt;/li>
+&lt;/ul>
+&lt;p>So it is critical that we can capture the output and don’t ever have to re-render it again.&lt;/p>
+&lt;p>Here is the example:&lt;/p>
+&lt;pre class="r">&lt;code>library(tidyverse)
+library(cowplot)
+library(colorspace)
+library(sf)
+library(ggtext)
+# attach data set, requires practicalgg package
+# remotes::install_github(&amp;quot;wilkelab/practicalgg&amp;quot;)
+data(texas_income, package = &amp;quot;practicalgg&amp;quot;)
+ggplot(texas_income, aes(fill = estimate)) +
+geom_sf(color = &amp;quot;white&amp;quot;) +
+coord_sf(xlim = c(538250, 2125629), crs = 3083) +
+scale_fill_continuous_sequential(
+palette = &amp;quot;Blues&amp;quot;, rev = TRUE,
+na.value = &amp;quot;grey60&amp;quot;,
+name = &amp;quot;annual median income (USD)&amp;quot;,
+limits = c(18000, 90000),
+breaks = 20000*c(1:4),
+labels = c(&amp;quot;$20,000&amp;quot;, &amp;quot;$40,000&amp;quot;, &amp;quot;$60,000&amp;quot;, &amp;quot;$80,000&amp;quot;),
+guide = guide_colorbar(
+direction = &amp;quot;horizontal&amp;quot;,
+label.position = &amp;quot;bottom&amp;quot;,
+title.position = &amp;quot;top&amp;quot;,
+barwidth = grid::unit(3.0, &amp;quot;in&amp;quot;),
+barheight = grid::unit(0.2, &amp;quot;in&amp;quot;)
+)
+) +
+labs(caption = &amp;quot;
+&amp;lt;span style=&amp;#39;font-family: \&amp;quot;Font Awesome 5 Brands\&amp;quot;&amp;#39;&amp;gt;&amp;amp;#xf099;&amp;lt;/span&amp;gt;
+@clauswilke&amp;lt;br&amp;gt;
+&amp;lt;span style=&amp;#39;font-family: \&amp;quot;Font Awesome 5 Free Solid\&amp;quot;&amp;#39;&amp;gt;&amp;amp;#xf781;&amp;lt;/span&amp;gt;
+clauswilke.com
+&amp;quot;) +
+theme_map(12, font_family = &amp;quot;Myriad Pro&amp;quot;) +
+theme(
+legend.title.align = 0.5,
+legend.text.align = 0.5,
+legend.justification = c(0, 0),
+legend.position = c(0.02, 0.1),
+plot.caption = element_markdown()
+)&lt;/code>&lt;/pre>
+&lt;div class="figure">&lt;span id="fig:map-Texas-income">&lt;/span>
+&lt;img src="figure-html/map-Texas-income-1.png" alt="Median annual income in Texas counties. Figure redrawn from: Wilke (2019) Fundamentals of Data Visualization, Chapter 4." width="576" />
+&lt;p class="caption">
+Figure 1: Median annual income in Texas counties. Figure redrawn from: Wilke (2019) Fundamentals of Data Visualization, &lt;a href="https://clauswilke.com/dataviz/color-basics.html">Chapter 4.&lt;/a>
+&lt;/p>
+&lt;/div>
+&lt;p>Next I’ll provide the exact recipe I follow to capture the output from such code.&lt;/p>
+&lt;ol style="list-style-type: decimal">
+&lt;li>&lt;p>At the top of your &lt;code>.Rmd&lt;/code> file, add an R chunk containing the following:&lt;/p>
+&lt;pre>&lt;code>```{r echo = FALSE}
+knitr::opts_chunk$set(fig.retina = 2)
+```&lt;/code>&lt;/pre>
+&lt;p>This will ensure that figures are rendered in high quality. Set &lt;code>echo = FALSE&lt;/code> for this chunk so the code isn’t included in the rendered output.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Stop the blogdown server with &lt;code>blogdown::stop_server()&lt;/code>. We don’t want the server to try to create blog posts out of the intermediate files we’ll be creating.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Add the following to the yaml section of your post:&lt;/p>
+&lt;pre>&lt;code>output:
+&amp;nbsp;&amp;nbsp;html_document:
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;keep_md: yes
+&lt;/code>&lt;/pre>
+&lt;p>If you want to use bookdown-style automated figure references, use this snippet instead:&lt;/p>
+&lt;pre>&lt;code>output:
+&amp;nbsp;&amp;nbsp;bookdown::html_document2:
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;keep_md: yes
+&lt;/code>&lt;/pre>
+&lt;p>This requires the bookdown package to be installed.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Knit your post. You will end up with a new file &lt;code>index.md&lt;/code> and a new folder called &lt;code>index_files&lt;/code>. The former contains the markdown code that knitr has generated and the latter contains any generated figures.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Now you want to copy the generated code and output chunks from &lt;code>index.md&lt;/code> back into &lt;code>index.Rmd&lt;/code>. For each code chunk in your &lt;code>.Rmd&lt;/code> file, there will be one or more markdown chunks, which are fenced with &lt;code>```r ...```&lt;/code>. There will also be markdown or HTML code to include any generated figures. Place all of this material after the respective code chunk from which it originated, but &lt;strong>do not delete&lt;/strong> the original code chunk. We want to keep the original code chunks around in case we do want to re-run some of the R code again in the future, e.g. if the post needs an update.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Next, you need to move the generated figures into a safe location. This ensures that they won’t be deleted when blogdown rebuilds the site the next time. I simply move the folder &lt;code>index_files/figure-html&lt;/code> to &lt;code>figure-html&lt;/code>.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Edit figure links to reflect the move from the previous step. Figure links may be included either as markdown links, such as &lt;code>![](index_files/figure-html/map-Texas-income-1.png)&lt;/code>, or as html links, such as &lt;code>&amp;lt;img src="https://sevimcengiz.github.io/blog/2020-09-08-a-blogdown-post-for-the-ages/index_files/figure-html/map-Texas-income-1.png" ...&lt;/code>. Which is the case depends on the exact chunk options you used to generate the figure. In either case, delete &lt;code>index_files/&lt;/code> from all figure links.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Delete the file &lt;code>index.md&lt;/code>.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Remove or comment out the &lt;code>output:&lt;/code> block you added under step 3.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Add the following line to the code chunk added under step 1:&lt;br />
+&lt;/p>
+&lt;pre>&lt;code>knitr::opts_chunk$set(echo = FALSE, eval = FALSE)
+&lt;/code>&lt;/pre>
+&lt;p>This turns off all the R Markdown chunks in your post.&lt;/p>&lt;/li>
+&lt;li>&lt;p>Restart the blogdown server with &lt;code>blogdown::serve_site()&lt;/code>.&lt;/p>&lt;/li>
+&lt;/ol>
+&lt;p>This may seem like a lot of steps and a lot of fiddling, but it’s really not that bad once you get the hang of it. Most blog posts, even elaborate ones, don’t have that many code chunks or figures, and manually copying and adjusting the markdown code takes much less time than writing the blog post in the first place.&lt;/p>
+&lt;p>In the future, if you need to update your post, you can either re-run all code by commenting out the line you added in step 10, or you can selectively turn on individual R chunks by setting their &lt;code>echo&lt;/code> and &lt;code>eval&lt;/code> options to &lt;code>TRUE&lt;/code>. Then you repeat steps 1 through 11, but copying only whichever output needs to be newly copied over. At the end make sure you disable all R chunks once again.&lt;/p>
+&lt;div class="footnotes">
+&lt;hr />
+&lt;ol>
+&lt;li id="fn1">&lt;p>This post has one figure, Figure &lt;a href="#fig:map-Texas-income">1&lt;/a>. It also has one equation, &lt;span class="math inline">\(a^2 + b^2 = c^2\)&lt;/span>. The equation serves no purpose here.&lt;a href="#fnref1" class="footnote-back">↩︎&lt;/a>&lt;/p>&lt;/li>
+&lt;li id="fn2">&lt;p>Throughout, I’m assuming you’re using &lt;code>.Rmd&lt;/code> files. Everything I say should be valid for &lt;code>.Rmarkdown&lt;/code> as well, though I haven’t tested this.&lt;a href="#fnref2" class="footnote-back">↩︎&lt;/a>&lt;/p>&lt;/li>
+&lt;/ol>
+&lt;/div></description></item><item><title>Fundamentals of Data Visualization</title><link>https://sevimcengiz.github.io/blog/2018/01/23/fundamentals-of-data-visualization/</link><pubDate>Tue, 23 Jan 2018 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2018/01/23/fundamentals-of-data-visualization/</guid><description>
+&lt;script src="https://sevimcengiz.github.io/rmarkdown-libs/header-attrs/header-attrs.js">&lt;/script>
+&lt;p>I’m very excited to announce my latest project, a book on data visualization. The working title is “Fundamentals of Data Visualization”. The book will be published with O’Reilly, and a preview is &lt;a href="https://clauswilke.com/dataviz/">available here.&lt;/a> The entire book is written in R Markdown, and the figures are made with ggplot2. The source for the book is &lt;a href="https://github.com/clauswilke/dataviz">available on github.&lt;/a>&lt;/p>
+&lt;p>Even though the entire book is written in R Markdown, it is not a book on programming. The book is meant as a guide to making visualizations that accurately reflect the data, tell a story, and look professional. It has grown out of my experience of working with students and postdocs in my laboratory on thousands of data visualizations. Over the years, I have noticed that the same issues arise over and over. I have attempted to collect my accumulated knowledge from these interactions in the form of this book.&lt;/p>
+&lt;p>As of this writing, approximately half of the planned chapters are completed, and all completed chapters are available online. I will post future chapters as they become available. Since this is a work in progress, not everything may be completely finalized, and I may rewrite some of the posted chapters at a later date. I welcome feedback. If you see any errors or other problems, please &lt;a href="https://github.com/clauswilke/dataviz/issues">open an issue on github.&lt;/a> If you have suggestions for other topics to cover, or for datasets that would work well for certain chapters, please also feel free to record these suggestions as issues on github.&lt;/p>
+&lt;p>With very few exceptions, all figures in the book are generated straight from ggplot2, with no manual post-processing in photoshop or illustrator. (At present, the only exception is two figures in the chapter on &lt;a href="https://clauswilke.com/dataviz/image-file-formats.html">image file formats.&lt;/a>) Therefore, the book also serves as a showcase of what ggplot2 can do. I am using the bleeding edge of ggplot2 software development, though. To reproduce all the figures in the book, you may have to install current development versions of several R packages.&lt;/p></description></item><item><title>R Markdown, the easiest and most elegant approach to writing about data analysis with R</title><link>https://sevimcengiz.github.io/blog/2014/10/04/r-markdown-the-easiest-and-most-elegant-approach-to-writing-about-data-analysis-with-r/</link><pubDate>Sat, 04 Oct 2014 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2014/10/04/r-markdown-the-easiest-and-most-elegant-approach-to-writing-about-data-analysis-with-r/</guid><description>&lt;p>This weekend, I finally spent some time learning &lt;a href="https://rmarkdown.rstudio.com/">R Markdown&lt;/a>. I had been aware of its existence for a while, but I had never bothered to check it out. What a mistake. R Markdown rocks! It&amp;rsquo;s hands down the easiest and most elegant method to creating rich documents that contain data analysis, figures, mathematical formulas, and text. And it&amp;rsquo;s super easy to learn. I wager that anybody who has RStudio installed can create a useful document in 30 minutes or less. So if you use R, and you&amp;rsquo;ve never used R Markdown, give it a try.&lt;/p>
+&lt;p>R Markdown provides a literate programming platform for the R language. Literate programming, &lt;a href="https://en.wikipedia.org/wiki/Literate_programming">invented by Donald Knuth,&lt;/a> allows users to write both a program and a document describing the program, at the same time. In the case of R, this means that you can write a document that contains R code, the output that is generated when the R code is run (including graphs), and prose describing the R code and its output. To give you an example, I started writing a tutorial for R&amp;rsquo;s ggplot2 library this weekend, and the original R Markdown file as well as the HTML output generated from that file are &lt;a href="https://github.com/wilkelab/ggplot2_cookbook/blob/master/README.md">available here.&lt;/a>&lt;/p>
+&lt;p>What does the word &lt;em>Markdown&lt;/em> stand for? &lt;a href="https://en.wikipedia.org/wiki/Markdown">Markdown&lt;/a> is a minimalist approach to writing strutured documents. It consists of plain text with a few simple directives to mark sections, turn text bold or italics, or insert quotes. If you have ever edited a wikipedia article, you have used Markdown.&lt;/p>
+&lt;p>To give you an example, this is Markdown text:&lt;/p>
+&lt;pre>&lt;code>We can make text **bold**, *italics*, or `look like code.`
+We can also insert links, [e.g. to wikipedia,](http://www.wikipedia.org/)
+we can quote things:
+&amp;gt; It is time to eat &amp;amp;#8212; Hungry John
+or make lists:
+1. Item 1
+2. Item 2
+3. Item 3
+&lt;/code>&lt;/pre>
+&lt;p>It will be rendered like this:&lt;/p>
+&lt;hr>
+&lt;p>We can make text &lt;strong>bold&lt;/strong>, &lt;em>italics&lt;/em>, or &lt;code>look like code.&lt;/code> We can also insert links, &lt;a href="http://www.wikipedia.org/">e.g. to wikipedia,&lt;/a> we can quote things:&lt;/p>
+&lt;blockquote>
+&lt;p>It is time to eat — Hungry John&lt;/p>
+&lt;/blockquote>
+&lt;p>or make lists:&lt;/p>
+&lt;ol>
+&lt;li>Item 1&lt;/li>
+&lt;li>Item 2&lt;/li>
+&lt;li>Item 3&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;p>R Markdown works the same, only that it adds the option to insert R code blocks. An R code block could look something like this:&lt;/p>
+&lt;pre>&lt;code>```{r}
+# place R code here, e.g. to make a plot:
+library(ggplot2)
+x &amp;lt;- 1:10; y &amp;lt;- x^2
+qplot(x, y)
+```
+&lt;/code>&lt;/pre>
+&lt;p>When you convert the R Markdown file to HTML, the R code gets executed, the R output captured and inserted into the document, and you&amp;rsquo;ve got everything nicely together, with very little work.&lt;/p>
+&lt;p>To create an R Markdown document in RStudio, all you have to do is go to &lt;code>File&lt;/code>, &lt;code>New File&lt;/code>, and then select &lt;code>R Markdown&lt;/code>. Accept the default settings, and R Studio will generate a new R Markdown file with a few lines of example content. To convert the file into HTML, simply click on the &amp;ldquo;Knit HTML&amp;rdquo; button. If you have previously stored your R Markdown file somewhere on your harddisk (with suffix &lt;code>.Rmd&lt;/code>), RStudio will automatically save the generated HTML file in the same location, with the same name and suffix &lt;code>.html&lt;/code>. The HTML file is self-contained, including all images, so it&amp;rsquo;s easy to publish it on a web page or share it with people. RStudio also provides you with the option to publish the document online on the &lt;a href="http://rpubs.com/">RPubs&lt;/a> website. Just click on the &amp;ldquo;Publish&amp;rdquo; button in the HTML view.&lt;/p>
+&lt;p>To learn more about R Markdown, go to: &lt;a href="https://rmarkdown.rstudio.com">https://rmarkdown.rstudio.com&lt;/a>&lt;/p></description></item></channel></rss>

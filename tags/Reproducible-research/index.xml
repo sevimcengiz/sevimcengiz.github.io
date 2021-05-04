@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Reproducible research on Sevim Cengiz</title><link>https://sevimcengiz.github.io/tags/Reproducible-research/</link><description>Recent content in Reproducible research on Sevim Cengiz</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 26 Oct 2013 00:00:00 +0000</lastBuildDate><atom:link href="https://sevimcengiz.github.io/tags/Reproducible-research/index.xml" rel="self" type="application/rss+xml"/><item><title>Ten simple rules for reproducible computational research</title><link>https://sevimcengiz.github.io/blog/2013/10/26/ten-simple-rules-for-reproducible-computational-research/</link><pubDate>Sat, 26 Oct 2013 00:00:00 +0000</pubDate><guid>https://sevimcengiz.github.io/blog/2013/10/26/ten-simple-rules-for-reproducible-computational-research/</guid><description>
+&lt;script src="https://sevimcengiz.github.io/rmarkdown-libs/header-attrs/header-attrs.js">&lt;/script>
+&lt;p>PLOS Computational Biology just published a new addition to their popular &lt;a href="https://collections.plos.org/ten-simple-rules">“ten simple rules”&lt;/a> series:&lt;/p>
+&lt;blockquote>
+&lt;p>Sandve GK, Nekrutenko A, Taylor J, Hovig E (2013) Ten Simple Rules for Reproducible Computational Research. PLoS Comput Biol 9(10): e1003285. &lt;a href="https://doi.org/10.1371/journal.pcbi.1003285">doi:10.1371/journal.pcbi.1003285&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>This article is relevant to anybody who wants to do computational research. I’ll make it required reading in my lab. For every single one of these rules, I can think of projects I’ve been involved with&lt;a href="#fn1" class="footnote-ref" id="fnref1">&lt;sup>1&lt;/sup>&lt;/a> that ran into trouble or failed because they violated that rule.&lt;/p>
+&lt;p>While all of the rules are important, I’m particularly partial to these four: avoid manual data manipulation, record all intermediate results, always store raw data behind plots, and provide public access to scripts and results. They will prevent a lot of headaches for both you and the people coming after you who’d like to build on your results.&lt;/p>
+&lt;div class="footnotes">
+&lt;hr />
+&lt;ol>
+&lt;li id="fn1">&lt;p>All of these projects were run by friends of friends, of course. None of this would ever happen in my lab. 😉&lt;a href="#fnref1" class="footnote-back">↩︎&lt;/a>&lt;/p>&lt;/li>
+&lt;/ol>
+&lt;/div></description></item></channel></rss>
