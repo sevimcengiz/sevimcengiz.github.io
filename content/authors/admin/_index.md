@@ -3,30 +3,31 @@ authors:
 - admin
 bio: ""
 education: ""
-email: "claus.o.wilke@gmail.com"
-interests: []
-#- Molecular Evolution
-#- Protein Biophysics
-#- Data Science
-#- Data Visualization
-name: Claus O. Wilke
+email: "sevim_cengiz@icloud.com"
+interests:
+- MR Spectroscopy
+- Data Visualization
+- Deep Learning
+- Super Resolution
+- Open-Source Contribution
+name: Sevim Cengiz
 organizations:
-- name: "The University of Texas at Austin"
+- name: "Bogazici University"
   url: ""
-role: "Professor of Integrative Biology"
+role: "PhD Candidate"
 social:
 - icon: envelope
   icon_pack: fas
-  link: '#contact'
+  link: 'mailto:sevim_cengiz@icloud.com'
 - icon: twitter
   icon_pack: fab
-  link: https://twitter.com/clauswilke
+  link: https://twitter.com/siimcengiz
 - icon: google-scholar
   icon_pack: ai
-  link: https://scholar.google.com/citations?user=Nc8U6E4AAAAJ
+  link: https://scholar.google.com.tr/citations?user=yHYxNMcAAAAJ&hl=ar&oi=ao
 - icon: github
   icon_pack: fab
-  link: https://github.com/clauswilke
+  link: https://github.com/sevimcengiz
 superuser: true
 user_groups:
 - Researchers
@@ -34,6 +35,8 @@ user_groups:
 ---
 
 
-Claus Wilke is the Jane and Roland Blumberg Centennial Professor in Molecular Evolution at The University of Texas at Austin. He holds a PhD in Theoretical Physics from the University of Bochum in Germany, and he received postdoctoral training in biological physics in the lab of Chris Adami at Caltech. Claus Wilke has published extensively in the areas of computational biology, evolutionary biology, protein biochemistry, and virology. He has also authored several popular R packages used for data visualization, such as cowplot, ggridges, and ggtext, and he is a regular contributor to the package ggplot2.
+Sevim Cengiz is a PhD candidate at Computational Imaging Lab (CIL) under the supervision of Dr. Esin Ozturk Isik.
+My current research focuses on MRSI data analysis, super resolution of MRSI, and new deep learning techniques. 
 
-Opinions expressed on this site are personal and are not meant to represent the official position of The University of Texas at Austin.
+My motivation for open-source has started when I met with GannetMask_Philips.m in Github. 
+There is no need to reinvent the wheel. Read more, explore more, code more, enjoy more, love more. 
