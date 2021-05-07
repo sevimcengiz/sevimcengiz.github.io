@@ -16,6 +16,7 @@ resources
 
 # final generated site
 !public/docker-compose.yml
+!public/.nojekyll
 
 # knitr and R markdown default cache directories
 /*_cache/
