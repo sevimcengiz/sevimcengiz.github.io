@@ -3,7 +3,7 @@ date: "2021-05-08T00:00:00Z" # date determines ordering on front page
 external_link: "https://sevimcengiz.github.io/oryx/"
 links:
 slides: ""
-summary: Description for Oryx telling more about it and how a wonderful tool it is.
+summary: Oryx-MRSI is a fully automated and user-friendly multi-slice 1H-MRSI data analysis software, which includes several new functionality, including chemical shift correction, CSF corrected metabolite map generation, registration of metabolite maps onto MNI152 brain atlas, and ROI analysis at brain parcellations.
 tags: []
 title: Oryx
 url_code: ""
