@@ -42,4 +42,3 @@ My current research focuses on MRSI data analysis, super resolution of MRSI, med
 My motivation for open-source has started when I met with GannetMask_Philips.m in Github. 
 There is no need to reinvent the wheel. Read more, explore more, code more, enjoy more, love more. 
 
-Bogazici University & MBZUAI
