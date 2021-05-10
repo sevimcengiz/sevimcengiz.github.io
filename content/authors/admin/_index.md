@@ -35,8 +35,11 @@ user_groups:
 ---
 
 
-Sevim Cengiz is a PhD candidate at Computational Imaging Lab (CIL) under the supervision of Dr. Esin Ozturk Isik.
-My current research focuses on MRSI data analysis, super resolution of MRSI, and new deep learning techniques. 
+Sevim Cengiz is a PhD candidate at Computational Imaging Lab (CIL) under the supervision of Dr. Esin Ozturk Isik and a research assistant at BioMedIA Lab under the supervision of Dr. Mohammad Yaqub.
+
+My current research focuses on MRSI data analysis, super resolution of MRSI, medical image segmentation and new deep learning techniques. 
 
 My motivation for open-source has started when I met with GannetMask_Philips.m in Github. 
 There is no need to reinvent the wheel. Read more, explore more, code more, enjoy more, love more. 
+
+Bogazici University & MBZUAI
