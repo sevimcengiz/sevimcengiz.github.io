@@ -12,9 +12,9 @@ interests:
 - Open-Source Contribution
 name: Sevim Cengiz
 organizations:
-- name: "Bogazici University"
+- name: "Bogazici University & Mohamed Bin Zayed University of Artificial Intelligence"
   url: ""
-role: "PhD Candidate"
+role: "PhD Candidate & Research Assistant "
 social:
 - icon: envelope
   icon_pack: fas
